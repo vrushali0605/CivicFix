@@ -1,0 +1,9 @@
+Flask==3.0.0
+gunicorn
+python-dotenv
+twilio
+Werkzeug
+itsdangerous
+Jinja2
+click
+requests
