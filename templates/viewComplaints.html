@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>My Complaints - CivicFix</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #cce7ff, #e0f7ff);
+            padding: 40px;
+            color: #1e2a38;
+        }
+
+        h1 {
+            text-align: center;
+            color: #2a4469;
+            margin-bottom: 10px;
+            letter-spacing: 0.3px;
+        }
+
+        .complaints-container {
+            background: #fff;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 6px 20px rgba(0,0,0,0.08);
+            animation: fadeIn 0.55s ease-out;
+        }
+
+        .description {
+            text-align: left;
+            font-size: 15.5px;
+            color: #2a4469;
+            margin-bottom: 18px;
+            opacity: 0;
+            transform: translateY(8px);
+            animation: fadeInUp 0.6s 0.08s forwards;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            transform-origin: top center;
+            animation: tableSlideUp 0.6s 0.12s ease both;
+        }
+
+        th, td {
+            padding: 12px 15px;
+            border-bottom: 1px solid #ddd;
+            text-align: left;
+        }
+
+        th {
+            background: #2a4469;
+            color: #fff;
+            font-size: 15px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        td {
+            font-size: 15px;
+            color: #333;
+        }
+
+        tr {
+            transition: all 0.2s ease;
+        }
+
+        tr:hover {
+            background-color: #f6f9ff;
+            transform: translateY(-3px);
+            box-shadow: 0 4px 12px rgba(42,68,105,0.08);
+        }
+
+        .no-data {
+            text-align: center;
+            padding: 20px;
+            font-size: 16px;
+            color: #666;
+        }
+
+        @keyframes fadeIn {
+            from {opacity: 0; transform: translateY(12px);}
+            to {opacity: 1; transform: translateY(0);}
+        }
+
+        @keyframes fadeInUp {
+            from {opacity: 0; transform: translateY(12px);}
+            to {opacity: 1; transform: translateY(0);}
+        }
+
+        @keyframes tableSlideUp {
+            from {opacity: 0; transform: translateY(18px) scale(0.995);}
+            to {opacity: 1; transform: translateY(0) scale(1);}
+        }
+
+        /* Floating popup */
+        .tip {
+            position: fixed;
+            right: 22px;
+            bottom: 22px;
+            background: linear-gradient(135deg, #004c99, #0073cc);
+            color: white;
+            padding: 14px 18px;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.18);
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            max-width: 320px;
+            transform-origin: bottom right;
+            animation: tipPop 0.6s cubic-bezier(.2,.9,.3,1);
+            z-index: 999;
+        }
+
+        .tip .close {
+            margin-left: auto;
+            background: rgba(255,255,255,0.14);
+            border-radius: 8px;
+            padding: 6px;
+            cursor: pointer;
+            font-weight: 700;
+        }
+
+        .tip .close:hover {
+            transform: scale(1.05);
+        }
+
+        @keyframes tipPop {
+            from { opacity: 0; transform: translateY(18px) scale(0.92); }
+            to   { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        .description::before {
+            content: '';
+            display: inline-block;
+            width: 36px;
+            height: 4px;
+            background: linear-gradient(90deg, #2a4469, #0073cc);
+            margin-right: 10px;
+            border-radius: 4px;
+            vertical-align: middle;
+        }
+
+        @media (max-width: 640px) {
+            body { padding: 20px; }
+            .complaints-container { padding: 16px; }
+            .tip { right: 12px; left: 12px; bottom: 12px; max-width: calc(100% - 24px); }
+        }
+    </style>
+</head>
+<body>
+    <h1>My Uploaded Complaints</h1>
+
+    <div class="complaints-container">
+       
+        {% if complaints %}
+        <table>
+            <thead>
+                <tr>
+                    <th>Subject</th>
+                    <th>Description</th>
+                    <th>Uploaded At</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for complaint in complaints %}
+                <tr>
+                    <td>{{ complaint['subject'] }}</td>
+                    <td>{{ complaint['description'] }}</td>
+                    <td>{{ complaint['created_at'] }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+            <div class="no-data">No complaints uploaded yet.</div>
+        {% endif %}
+    </div>
+
+    <div id="helpTip" class="tip" role="status" aria-live="polite">
+        <div style="font-size:18px;line-height:1;">💡</div>
+        <div>
+            <div style="font-weight:700;">Help us improve the city</div>
+            <div style="font-size:13px; opacity:0.95;">Accurate complaints help CivicFix act faster — thank you for contributing!</div>
+        </div>
+        <div class="close" id="tipClose" title="Dismiss">✕</div>
+    </div>
+
+    <script>
+        document.getElementById('tipClose').addEventListener('click', function () {
+            const tip = document.getElementById('helpTip');
+            tip.style.transition = 'transform 220ms ease, opacity 220ms ease';
+            tip.style.transform = 'translateY(12px) scale(0.96)';
+            tip.style.opacity = '0';
+            setTimeout(() => tip.remove(), 260);
+        });
+
+        setTimeout(function(){
+            const tip = document.getElementById('helpTip');
+            if (tip) {
+                tip.style.transition = 'transform 300ms ease, opacity 300ms ease';
+                tip.style.transform = 'translateY(12px) scale(0.96)';
+                tip.style.opacity = '0';
+                setTimeout(() => { if (tip.parentNode) tip.parentNode.removeChild(tip); }, 340);
+            }
+        }, 8000);
+    </script>
+</body>
+</html>

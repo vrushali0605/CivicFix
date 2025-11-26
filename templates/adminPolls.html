@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>CivicFix | Manage Polls</title>
+  <link rel="stylesheet" href="/static/AdminDashboard.css">
+  <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <style>
+    /* ===== GLOBAL ===== */
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      background: #e9eff5;
+      color: #222;
+      min-height: 100vh;
+    }
+
+    /* header (kept simple — you already have this in your CSS file) */
+    .header {
+      background: #2a4469;
+      color: #fff;
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      padding:12px 20px;
+    }
+
+    .container { display: flex; min-height: calc(100vh - 52px); }
+
+    /* ===== sidebar (unchanged layout) ===== */
+    .sidebar {
+      width: 230px;
+      background: #2c3e50;
+    color: white;;
+      color: white;
+      padding: 18px 12px;
+      display:flex;
+      flex-direction:column;
+      justify-content:space-between;
+    }
+    .sidebar .head p { margin:0 0 8px; font-weight:700; text-align:center; }
+    .sidebar ul { list-style:none; padding:0; margin:10px 0; }
+    .sidebar ul li { margin:6px 0; }
+    .sidebar ul li a { color:#d7e6fb; text-decoration:none; padding:8px 12px; display:block; border-radius:6px; }
+    .sidebar ul li a.active { background:#2c3e50; color:#fff; }
+
+    /* ===== main area ===== */
+    #root {
+      flex:1;
+      padding: 36px;
+      display:flex;
+      flex-direction:column;
+      align-items:center; /* center containers horizontally on the page */
+      gap: 28px;
+      animation: fadeIn 0.5s ease;
+    }
+
+    h1 { color:#2a4469; margin:0; }
+  .section-heading { color:#2a4469; margin:0; font-size:24px; text-align:center; width:100%; }
+
+    /* ===== poll form container ===== */
+    .poll-form {
+      width: 100%;
+      max-width: 760px;           /* keep previous max width but allow flexible layout */
+      background: #2a4469;        /* darker navy */
+      color: #fff;
+      padding: 28px;
+      border-radius: 14px;
+      box-shadow: 0 10px 30px rgba(8,18,30,0.45);
+      display:flex;
+      flex-direction:column;
+      gap: 14px;
+      align-items: center;
+      transform: translateY(0);
+    }
+
+    .poll-form h2 {
+      width: 100%;
+      margin: 0 0 6px 0;
+      font-size: 20px;
+      font-weight: 700;
+      text-align: left;           /* heading at left-most inside container */
+      padding-left: 8px;
+      border-left: 4px solid #1e90ff;
+      color: #ffffff;
+    }
+
+    /* ----- Shared input style: description, date, option inputs, add button, submit ----- */
+    .field, textarea, input[type="datetime-local"], .option-row .option-input, .add-option-btn, .poll-submit {
+      width: 100%;
+      max-width: 100%;
+      background:#ffffff;
+      color: #042855;
+      border: none;
+      border-radius: 10px;
+      padding: 12px 14px;
+      font-size: 18px;
+      box-shadow: inset 0 1px 4px rgba(255,255,255,0.02);
+      transition: box-shadow .18s ease, transform .12s ease;
+    }
+
+    textarea {
+      resize: vertical;
+      min-height: 86px;
+      line-height: 1.35;
+    }
+
+    textarea::placeholder,
+    input::placeholder {
+      color: #041e3c;
+    }
+
+    .field:focus, textarea:focus, input:focus, .option-row .option-input:focus {
+      outline: none;
+      box-shadow: 0 0 10px rgba(30,144,255,0.12);
+      transform: translateY(-1px);
+    }
+
+    /* ===== options list: make each option row same width as other inputs ===== */
+    .options-list {
+      width: 100%;
+      display:flex;
+      flex-direction: column;
+      gap: 12px;
+      margin-top: 6px;
+    }
+
+    /* each option is a row: input (fills) + remove button (fixed size) */
+    .option-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      width: 100%;
+    }
+
+    .option-row .option-input {
+      flex: 1;                    /* fill remaining space */
+      padding-right: 52px;        /* ensure text doesn't run under remove button on small screens */
+    }
+
+    /* remove button: round and neatly aligned to the right of the input */
+    .remove-option {
+      flex: 0 0 44px;
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background: #ff5b5b;
+      color: #fff;
+      border: none;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-size: 16px;
+      cursor:pointer;
+      box-shadow: 0 6px 14px rgba(0,0,0,0.35);
+      transition: transform .12s ease, background .12s ease;
+    }
+    .remove-option:hover { transform: scale(1.07); background:#e03b3b; }
+
+    /* add-option button occupies the same width as inputs (100% of container) */
+    .add-option-wrap {
+      width: 100%;
+      display:flex;
+      justify-content:flex-start; /* can place left or center; keeping left alignment looks neat */
+    }
+
+    .add-option-btn {
+      width: 220px;               /* smaller than full width but visually aligned with inputs because container width is fixed */
+      background: #1e90ff;
+      color: #fff;
+      padding: 10px 14px;
+      border-radius: 10px;
+      cursor:pointer;
+      font-weight:600;
+      transition: transform .12s ease, background .12s ease;
+    }
+    /* if you want add-option to be full width exactly like inputs, set width:100% above */
+    /* .add-option-btn { width:100%; } */
+
+    .add-option-btn:hover { transform: translateY(-2px); background:#3aa0ff; }
+
+    /* submit button */
+    .poll-submit {
+      width: 100%;
+      background: linear-gradient(180deg,#1e90ff,#1877d2);
+      padding: 12px 16px;
+      color: #fff;
+      border-radius: 10px;
+      font-weight:700;
+      cursor:pointer;
+      box-shadow: 0 8px 18px rgba(30,144,255,0.14);
+    }
+    .poll-submit:hover { transform: translateY(-3px); }
+
+    /* ===== existing polls table (matching dark aesthetic) ===== */
+    .polls-table {
+      width: 100%;
+      max-width: 760px;
+      border-collapse: collapse;
+      background:#2a4469;
+      color: #fff;
+      border-radius: 10px;
+      overflow: hidden;
+      box-shadow: 0 8px 22px rgba(8,18,30,0.45);
+    }
+    .polls-table th {
+      background: #123a63;
+      text-align: left;
+      padding: 12px 14px;
+      font-weight: 700;
+    }
+    .polls-table td {
+      padding: 12px 14px;
+      border-top: 1px solid rgba(255,255,255,0.03);
+      vertical-align: middle;
+    }
+    .view-btn {
+      display:inline-block;
+      background: linear-gradient(180deg,#1e90ff,#1877d2);
+      color:#fff;
+      padding:8px 12px;
+      border-radius:8px;
+      text-decoration:none;
+      font-weight:600;
+      box-shadow: 0 6px 14px rgba(30,144,255,0.12);
+      transition: transform .12s ease, box-shadow .12s ease, opacity .12s ease;
+    }
+    .view-btn:hover{ transform:translateY(-2px); box-shadow: 0 12px 30px rgba(30,144,255,0.14); opacity:0.98 }
+
+    /* ===== responsive tweaks ===== */
+    @media (max-width: 820px) {
+      .poll-form, .polls-table { width: calc(100% - 32px); }
+      .add-option-btn { width: 100%; }
+      .remove-option { flex: 0 0 40px; width:40px; height:40px; }
+    }
+
+    @keyframes fadeIn { from {opacity:0; transform:translateY(8px);} to{opacity:1; transform:none;} }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <p class="logo">Admin Dashboard</p>
+    <div class="profile">
+      <i class='bx bxs-user'></i><span style="margin-left:8px">Admin</span>
+    </div>
+  </div>
+
+  <div class="container">
+    <!-- Sidebar (unchanged content & links) -->
+    <div class="sidebar">
+      <div class="head"><p>Admin Menu</p></div>
+      <ul>
+        <li><a href="{{ url_for('admin_dashboard') }}"><i class='bx bxs-dashboard'></i> Dashboard</a></li>
+        <li><a href="{{ url_for('admin_users') }}"><i class='bx bxs-user'></i> Manage Users</a></li>
+        <li><a href="{{ url_for('admin_complaints') }}"><i class='bx bxs-message-square-error'></i> Manage Complaints</a></li>
+        <li><a href="{{ url_for('admin_status') }}"><i class='bx bxs-check-circle'></i> Manage Status Log</a></li>
+        <li><a href="{{ url_for('admin_escalations') }}"><i class='bx bxs-flag-alt'></i> Manage Escalation</a></li>
+        <li><a href="{{ url_for('admin_polls') }}" class="active"><i class='bx bxs-bar-chart-alt-2'></i> Manage Polls</a></li>
+        <li><a href="{{url_for('admin_feedback')}}"><i class='bx bx-edit'></i> Manage Feedbacks</a></li>
+
+      </ul>
+      <div class="foot">
+        <h3 style="margin:0 0 10px 0;">Quick Actions</h3>
+        <a href="{{ url_for('admin_logout') }}"><button style="padding:8px 12px;border-radius:8px;border:none;cursor:pointer;">Logout</button></a>
+      </div>
+    </div>
+
+    <!-- MAIN -->
+    <main id="root">
+      <h1>Create New Poll</h1>
+
+      <form class="poll-form" method="POST" action="{{ url_for('admin_polls') }}">
+        <h2>Poll Details</h2>
+
+        <!-- Description (full width) -->
+        <textarea name="description" class="field" placeholder="Enter poll description" required></textarea>
+
+        <!-- Date (full width) -->
+        <input type="datetime-local" name="expires_at" class="field" required>
+
+        <!-- Options: each option-row has input (fills width) + round remove button -->
+        <div class="options-list" id="optionsContainer">
+          <div class="option-row">
+            <input class="option-input" type="text" name="options[]" placeholder="Option 1" required>
+            <button type="button" class="remove-option" onclick="removeOption(this)" title="Remove option">✖</button>
+          </div>
+
+          <div class="option-row">
+            <input class="option-input" type="text" name="options[]" placeholder="Option 2" required>
+            <button type="button" class="remove-option" onclick="removeOption(this)" title="Remove option">✖</button>
+          </div>
+        </div>
+
+        <!-- Add option button (visually aligned with inputs) -->
+        <div class="add-option-wrap">
+          <button type="button" class="add-option-btn" onclick="addOption()">+ Add Option</button>
+        </div>
+
+        <!-- submit -->
+        <button type="submit" class="poll-submit">Create Poll</button>
+      </form>
+
+  <!-- Existing Polls -->
+  <h2 class="section-heading">Poll Results</h2>
+  <table class="polls-table" aria-describedby="existing-polls">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Description</th>
+            <th>Expires At</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for poll in polls %}
+          <tr>
+            <td>{{ poll['id'] }}</td>
+            <td>{{ poll['description'] }}</td>
+            <td>{{ poll['expires_at'] }}</td>
+            <td><a class="view-btn" href="{{ url_for('admin_poll_results', poll_id=poll['id']) }}">View Results</a></td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </main>
+  </div>
+
+  <script>
+    // keep same logic — add/remove options
+    function addOption() {
+      const container = document.getElementById('optionsContainer');
+      const row = document.createElement('div');
+      row.className = 'option-row';
+      row.innerHTML = `
+        <input class="option-input" type="text" name="options[]" placeholder="Option" required>
+        <button type="button" class="remove-option" onclick="removeOption(this)" title="Remove option">✖</button>
+      `;
+      container.appendChild(row);
+      // focus new input
+      const input = row.querySelector('.option-input');
+      input.focus();
+      row.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+
+    function removeOption(btn) {
+      const container = document.getElementById('optionsContainer');
+      if (container.children.length <= 2) {
+        alert('At least 2 options are required.');
+        return;
+      }
+      btn.closest('.option-row').remove();
+    }
+  </script>
+</body>
+</html>

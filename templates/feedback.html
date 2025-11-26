@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CivicFix | Feedback</title>
+<style>
+    body {
+        font-family: 'Segoe UI', sans-serif;
+        margin: 0;
+        padding: 0;
+        background: linear-gradient(135deg, #cce7ff, #e0f7ff);
+        overflow-x: hidden;
+    }
+
+    .container {
+        display: flex;
+        flex-wrap: wrap;
+        min-height: 100vh;
+        padding: 50px;
+        gap: 50px;
+        justify-content: center;
+        align-items: center;
+    }
+
+    /* Feedback form + info card base */
+    .left, .right {
+        flex: 1;
+        min-width: 300px;
+        background: white;
+        padding: 40px;
+        border-radius: 15px;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        opacity: 0;
+        transform: translateY(40px) scale(0.96);
+        animation: popUp 0.9s ease forwards;
+    }
+
+    .left { animation-delay: 0.1s; }
+    .right { animation-delay: 0.25s; }
+
+    @keyframes popUp {
+        0% {
+            opacity: 0;
+            transform: translateY(40px) scale(0.96);
+        }
+        100% {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+        }
+    }
+
+    /* Left container - Feedback form */
+    .left h2 {
+        margin-bottom: 25px;
+        color: #333;
+        font-size: 28px;
+        text-align: center;
+        position: relative;
+    }
+
+    .left h2::after {
+        content: '';
+        display: block;
+        width: 60px;
+        height: 3px;
+        background: #001125;
+        margin: 10px auto 0;
+        border-radius: 2px;
+    }
+
+    .left input, 
+    .left textarea, 
+    .left select, 
+    .left button {
+        width: 100%;
+        padding: 12px 15px;
+        margin-bottom: 20px;
+        border-radius: 8px;
+        border: 1px solid #ccc;
+        font-size: 16px;
+        outline: none;
+        transition: 0.25s ease;
+    }
+
+    .left input:focus, 
+    .left textarea:focus, 
+    .left select:focus {
+        border-color: #0073cc;
+        box-shadow: 0 0 6px rgba(0,115,204,0.25);
+        transform: scale(1.02);
+    }
+
+    .left button {
+        background: #001125;
+        color: white;
+        border: none;
+        cursor: pointer;
+        font-weight: bold;
+        transition: 0.3s ease;
+    }
+
+    .left button:hover {
+        background: #357ab8;
+        transform: scale(1.05);
+        box-shadow: 0 6px 14px rgba(0,0,0,0.15);
+    }
+
+    /* Right container - Image + info */
+    .right img {
+        width: 100%;
+        max-height: 300px;
+        object-fit: cover;
+        border-radius: 10px;
+        margin-bottom: 20px;
+        animation: fadeInImg 1.2s ease forwards;
+    }
+
+    @keyframes fadeInImg {
+        from { opacity: 0; transform: scale(0.96); }
+        to { opacity: 1; transform: scale(1); }
+    }
+
+    .right p {
+        font-size: 16px;
+        color: #555;
+        line-height: 1.6;
+        animation: fadeInText 1s 0.4s ease forwards;
+        opacity: 0;
+    }
+
+    @keyframes fadeInText {
+        from { opacity: 0; transform: translateY(12px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Responsive view */
+    @media (max-width: 900px) {
+        .container {
+            flex-direction: column;
+            padding: 30px;
+        }
+        .left, .right {
+            padding: 30px;
+        }
+    }
+</style>
+</head>
+<body>
+
+<div class="container">
+    <div class="left">
+        <h2>Give Your Feedback</h2>
+        <form action="/submit_feedback" method="POST">
+            <input type="text" name="name" placeholder="Your Name" required>
+            <input type="email" name="email" placeholder="Your Email" required>
+            <select name="category" required>
+                <option value="">Select Feedback Type</option>
+                <option value="bug">Bug Report</option>
+                <option value="suggestion">Suggestion</option>
+                <option value="praise">Praise</option>
+                <option value="other">Other</option>
+            </select>
+            <textarea name="message" rows="5" placeholder="Your Feedback" required></textarea>
+            <a href="{{ url_for('feedback_success') }}">
+                <button type="submit">Submit Feedback</button>
+            </a>
+        </form>
+    </div>
+
+    <div class="right">
+        <img src="/static/feedback.jpg" alt="Feedback Image">
+        <p>
+            Citizens’ feedback is vital for improving CivicFix.  
+            Your suggestions, complaints, and praise help us understand local issues better, prioritize solutions,  
+            and build a more effective platform for everyone.  
+            Every input counts in shaping a community-driven civic experience.
+        </p>
+    </div>
+</div>
+
+</body>
+</html>
