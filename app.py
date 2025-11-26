@@ -6,6 +6,19 @@ from dotenv import load_dotenv
 from werkzeug.security import check_password_hash, generate_password_hash
 from datetime import timedelta
 
+# Ensure instance folder exists
+if not os.path.exists('instance'):
+    os.makedirs('instance')
+
+# Ensure DB exists
+db_path = os.path.join('instance', 'civicfix.db')
+if not os.path.exists(db_path):
+    # Create DB and load schema
+    conn = sqlite3.connect(db_path)
+    with open('schema.sql', 'r') as f:
+        conn.executescript(f.read())
+    conn.close()
+
 
 # --- Hardcoded Admin ---
 ADMIN_USERNAME = "admin@gmail.com"
